@@ -11,7 +11,7 @@ class Axis(enum.Enum):
     x = 2
 
 
-def map_to_keypoints(heatmaps):
+def maps_to_keypoints(heatmaps):
     """Turns feature-detector heatmaps into (x, y, scale) keypoints.
 
     This function takes a tensor of feature maps as input. Each map is normalized
@@ -118,9 +118,37 @@ def keypoints_to_maps(keypoints, sigma=1.0, heatmap_width=16):
     # Create two 1-D Gaussian vectors (marginals) and multiply to get a 2-d
     # map:
     keypoint_width = 2.0 * (sigma / heatmap_width) ** 2.0
-    x_vec = torch.exp(-((get_grid(Axis.x) - x_coordinates) ** 2.0) / keypoint_width)
-    y_vec = torch.exp(-((get_grid(Axis.y) - y_coordinates) ** 2.0) / keypoint_width)
+    x_vec = torch.exp(-((get_grid(Axis.x) - x_coordinates)
+                        ** 2.0) / keypoint_width)
+    y_vec = torch.exp(-((get_grid(Axis.y) - y_coordinates)
+                        ** 2.0) / keypoint_width)
     maps = x_vec * y_vec
 
     maps = maps * map_scales[:, None, None, :, 0]
     return maps.permute(0, 3, 1, 2)
+
+
+def add_coord_channels(image_tensor):
+    """Adds channels containing pixel indices (x and y coordinates) to an image.
+
+    Note: This has nothing to do with keypoint coordinates. It is just a data
+    augmentation to allow convolutional networks to learn non-translation-
+    equivariant outputs. This is similar to the "CoordConv" layers:
+    https://arxiv.org/abs/1603.09382.
+
+    Args:
+    image_tensor: [batch_size, C, H, W] tensor.
+
+    Returns:
+    [batch_size, C + 2, H, W] tensor with x and y coordinate channels.
+    """
+
+    batch_size, C, y_size, x_size = image_tensor.shape
+
+    x_grid = torch.linspace(-1.0, 1.0, x_size).to(image_tensor.device)
+    x_map = x_grid[None, None, None, :].repeat((batch_size, 1, y_size, 1))
+
+    y_grid = torch.linspace(1.0, -1.0, y_size).to(image_tensor.device)
+    y_map = y_grid[None, None, :, None].repeat((batch_size, 1, 1, x_size))
+
+    return torch.cat([image_tensor, x_map, y_map], dim=1)
