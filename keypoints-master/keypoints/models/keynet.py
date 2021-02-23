@@ -1,11 +1,6 @@
 import torch
-from data_augments import TpsAndRotate
 from keypoints.models import knn
-from keypoints.models import vgg as vgg
-from config import config
-import numpy as np
-
-args = config()
+from keypoints import models as vgg
 
 
 class KeyNet(knn.Container):
@@ -28,14 +23,12 @@ class KeyNet(knn.Container):
         z = self.encoder(x)
 
         heatmap = self.keypoint(x_t)
-        heatmap_s = self.keypoint(x)
-        k_s, p_s = self.ssm(heatmap_s, probs=True)
         k, p = self.ssm(heatmap, probs=True)
         m = self.key2map(k, height=z.size(2), width=z.size(3))
 
         x_t = self.decoder(torch.cat((z, m), dim=1))
 
-        return x_t, z, k, m, p, heatmap, k_s
+        return x_t, z, k, m, p, heatmap
 
     def load(self, directory):
         self.encoder.load(directory + '/encoder')
@@ -55,7 +48,7 @@ class KeyNet(knn.Container):
 
 
 def make(args):
-    nonlinearity, kwargs = torch.nn.LeakyReLU, {"inplace": True}
+    nonlinearity, kwargs = nn.LeakyReLU, {"inplace": True}
     encoder_core = vgg.make_layers(vgg.vgg_cfg[args.model_type], nonlinearity=nonlinearity, nonlinearity_kwargs=kwargs)
     encoder = knn.Unit(args.model_in_channels, args.model_z_channels, encoder_core)
     decoder_core = vgg.make_layers(vgg.decoder_cfg[args.model_type])

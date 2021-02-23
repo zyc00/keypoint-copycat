@@ -60,9 +60,11 @@ def make_grid(tensor, rows, columns):
     """
     Makes a grid from a B, C, H, W tensor
     Far superior to the torchvision version, coz it's vectorized
+
     If B > rows * columns, it will truncate for you.
     truncate using an index tensor before you pass in if you want specific images
     in specific slots
+
     :param tensor:
     :param rows:
     :param columns:
