@@ -1,20 +1,27 @@
+import sys
+sys.path.append('./keypoints')
+sys.path.append('./configs')
+
+import math
+
 import torch
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from torch.optim import Adam
 
-from data_augments import TpsAndRotate, nop
+from data_augments import TpsAndRotate, nop, TpsAndRotate_s
 from keypoints.models import keynet
 from utils import ResultsLogger
-from apex import amp
 from keypoints.ds import datasets as ds
 from config import config
+
+import numpy as np
 
 
 if __name__ == '__main__':
 
     args = config()
-    torch.cuda.set_device(args.device)
+    torch.device('cpu')
     run_dir = f'data/models/keypoints/{args.model_type}/run_{args.run_id}'
 
     """ logging """
@@ -47,8 +54,8 @@ if __name__ == '__main__':
     optim = Adam(kp_network.parameters(), lr=1e-4)
 
     """ apex mixed precision """
-    if args.device != 'cpu':
-        model, optimizer = amp.initialize(kp_network, optim, opt_level=args.opt_level)
+    # if args.device != 'cpu':
+    #     model, optimizer = amp.initialize(kp_network, optim, opt_level=args.opt_level)
 
     """ loss function """
     def l2_reconstruction_loss(x, x_, loss_mask=None):
@@ -76,11 +83,8 @@ if __name__ == '__main__':
 
                 loss = criterion(x_t, x_, loss_mask)
 
-                if args.device != 'cpu':
-                    with amp.scale_loss(loss, optim) as scaled_loss:
-                        scaled_loss.backward()
-                else:
-                    loss.backward()
+
+                loss.backward()
                 optim.step()
 
                 if i % args.checkpoint_freq == 0:

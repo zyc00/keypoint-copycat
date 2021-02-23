@@ -151,7 +151,7 @@ class Unit(nn.Module):
             f = torch.load(str(path), map_device)
             block.load_state_dict(f)
         else:
-            block.load_state_dict(torch.load(str(path)))
+            block.load_state_dict(torch.load(str(path), map_location=torch.device('cpu')))
 
     def save(self, directory):
         self._save_block(directory, 'in_block', self.in_block)

@@ -36,3 +36,20 @@ class TpsAndRotate(object):
         x_ = peturb(x, theta_tps, cntl_pts, theta_rotate)
         loss_mask = peturb(loss_mask, theta_tps, cntl_pts, theta_rotate)
         return x, x_, loss_mask
+
+class TpsAndRotate_s(object):
+    def __init__(self, data_aug_tps_cntl_pts, data_aug_tps_variance, data_aug_max_rotate):
+        self.tps_cntl_pts, self.tps_variance, self.max_rotate = data_aug_tps_cntl_pts, data_aug_tps_variance, data_aug_max_rotate
+
+    def __call__(self, data):
+        x = data
+        loss_mask = torch.ones(x.shape, dtype=x.dtype, device=x.device)
+        bsize = x.size(0)
+        theta_tps, cntl_pts, theta_rotate = rand_peturb_params(bsize, self.tps_cntl_pts, self.tps_variance, self.max_rotate)
+        x = peturb(x, theta_tps, cntl_pts, theta_rotate)
+        loss_mask = peturb(loss_mask, theta_tps, cntl_pts, theta_rotate)
+
+        theta_tps, cntl_pts, theta_rotate = rand_peturb_params(bsize, self.tps_cntl_pts, self.tps_variance, self.max_rotate)
+        x_ = peturb(x, theta_tps, cntl_pts, theta_rotate)
+        loss_mask = peturb(loss_mask, theta_tps, cntl_pts, theta_rotate)
+        return x, x_, loss_mask
