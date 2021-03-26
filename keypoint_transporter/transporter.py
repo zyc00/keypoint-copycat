@@ -74,7 +74,9 @@ if __name__ == '__main__':
             batch = tqdm(train_l, total=len(train) // args.batch_size)
             for i, data in enumerate(batch):
                 data = to_device(data, device=args.device)
-                x, x_, loss_mask = augment(*data)
+                x_ = data[1]
+                x = data[0]
+                loss_mask = torch.ones(x.shape, dtype=x.dtype, device=x.device)
 
                 optim.zero_grad()
                 x_t, z, k, m, p, heatmap, mask_xs, mask_xt = transporter_net(x, x_)
@@ -99,12 +101,13 @@ if __name__ == '__main__':
             batch = tqdm(test_l, total=len(test) // args.batch_size)
             for i, data in enumerate(batch):
                 data = to_device(data, device=args.device)
-                x, x_, loss_mask = augment(*data)
+                x = data[0]
+                x_ = data[1]
 
                 x_t, z, k, m, p, heatmap, mask_xs, mask_xt = transporter_net(x, x_)
-                loss = criterion(x_t, x_, loss_mask)
+                loss = criterion(x_t, x_, None)
 
-                display.log(batch, epoch, i, loss, optim, x, x_, x_t, heatmap, k, m, p, loss_mask,
+                display.log(batch, epoch, i, loss, optim, x, x_, x_t, heatmap, k, m, p, None,
                             type='test', depth=20, mask_xs=mask_xs, mask_xt=mask_xt)
 
             ave_loss, best_loss = display.end_epoch(epoch, optim)
