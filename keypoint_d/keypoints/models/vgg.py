@@ -18,7 +18,7 @@ def make_layers(cfg, batch_norm=True, extra_in_channels=0,
     nonlinearity_kwargs = {} if nonlinearity_kwargs is None else nonlinearity_kwargs
     nonlinearity = nn.ReLU(inplace=True) if nonlinearity is None else nonlinearity(**nonlinearity_kwargs)
     layers = []
-    in_channels = cfg[0][0] + extra_in_channels
+    in_channels = cfg[0] + extra_in_channels
     for v in cfg[1:]:
         if v == 'M':
             layers += [nn.MaxPool2d(kernel_size=2, stride=2)]
@@ -36,10 +36,10 @@ def make_layers(cfg, batch_norm=True, extra_in_channels=0,
                 layers += [knn.Coords()]
             layers += [nn.Conv2d(in_channels + 2 * co_ord_conv, v, kernel_size=3)]
             if batch_norm:
-                layers += [nn.BatchNorm2d(v[0])]
+                layers += [nn.BatchNorm2d(v)]
             layers += [nonlinearity]
 
-            in_channels = v[0]
+            in_channels = v
     return nn.Sequential(*layers)
 
 
