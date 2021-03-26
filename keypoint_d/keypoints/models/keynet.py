@@ -53,7 +53,7 @@ def make(args):
     encoder = knn.Unit(args.model_in_channels, args.model_z_channels, encoder_core)
     decoder_core = vgg.make_layers(vgg.decoder_cfg[args.model_type])
     decoder = knn.Unit(args.model_z_channels + args.model_keypoints, args.model_in_channels, decoder_core)
-    keypoint_core = vgg.make_layers(vgg.vgg_cfg[args.model_type_], nonlinearity=nonlinearity, nonlinearity_kwargs=kwargs)
+    keypoint_core = vgg.make_layers(vgg.vgg_cfg[args.model_type], nonlinearity=nonlinearity, nonlinearity_kwargs=kwargs)
     keypoint = knn.Unit(args.model_in_channels, args.model_keypoints, keypoint_core)
     keymapper = knn.GaussianLike(sigma=0.1)
     kp_network = KeyNet(encoder, keypoint, keymapper, decoder, init_weights=True)

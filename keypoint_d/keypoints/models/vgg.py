@@ -34,12 +34,7 @@ def make_layers(cfg, batch_norm=True, extra_in_channels=0,
             layers += [nn.ReplicationPad2d(1)]
             if co_ord_conv:
                 layers += [knn.Coords()]
-            if v[1] == 1:
-                layers += [nn.Conv2d(in_channels + 2 * co_ord_conv, v[0], kernel_size=3, padding=0)]
-            if v[1] == 2:
-                layers += [nn.Conv2d(in_channels + 2 * co_ord_conv, v[0], kernel_size=3, dilation=2, padding = 1)]
-            if v[1] == 3:
-                 layers += [nn.Conv2d(in_channels + 2 * co_ord_conv, v[0], kernel_size=3, dilation=2, padding = 1)]
+            layers += [nn.Conv2d(in_channels + 2 * co_ord_conv, v, kernel_size=3)]
             if batch_norm:
                 layers += [nn.BatchNorm2d(v[0])]
             layers += [nonlinearity]
@@ -56,7 +51,7 @@ U -> Bilinear upsample
 
 decoder_cfg = {
     'A': [512, 512, 'U', 256, 256, 'U', 256, 256, 'U', 128, 'U', 64, 'U'],
-    'F': [(512, 1), (512, 1), 'U_', (256, 1), (256, 1), 'U', (256, 1), (256, 1), 'U', (128, 1), (64, 1)],
+    'F': [512, 512, 'U_', 256, 256, 'U', 256, 256, 'U', 128, 64],
     'VGG_PONG': [32, 'U', 16, 'U', 16],
     'VGG_PONG_TRIVIAL': [16, 16],
     'VGG_PONG_LAYERNECK': [32, 32, 16, 16],
@@ -69,8 +64,7 @@ vgg_cfg = {
     'B': [64, 64, 'M', 128, 128, 'M', 256, 256, 'M', 512, 512, 'M', 512, 512, 'M'],
     'D': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 'M', 512, 512, 512, 'M', 512, 512, 512, 'M'],
     'E': [64, 64, 'M', 128, 128, 'M', 256, 256, 256, 256, 'M', 512, 512, 512, 512, 'M', 512, 512, 512, 512, 'M'],
-    'F': [(64, 1), (128, 1), 'M', (256, 1), (256, 1), 'M', (512, 1), (512, 1), 'M_', (512, 1), (512, 1)],
-    'F_': [(64, 1), (128, 1), 'M', (256, 1), (256, 1), 'M', (512, 1), (512, 1), 'M', (512, 1), (512, 1)],
+    'F': [64, 128, 'M', 256, 256, 'M', 512, 512, 'M_', 512, 512],
     'VGG_PONG': [16, 'M', 16, 'M', 32],
     'VGG_PONG_TRIVIAL': [16, 16],
     'VGG_PONG_LAYERNECK': [16, 32],

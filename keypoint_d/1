@@ -1,6 +1,5 @@
 checkpoint_freq: 1000
 
-model_type_: F_
 model_type: F
 model_in_channels: 3
 model_z_channels : 64
